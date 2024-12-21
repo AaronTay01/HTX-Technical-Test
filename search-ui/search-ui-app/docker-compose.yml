@@ -1,0 +1,10 @@
+services:
+  search-ui:
+    image: node:18
+    container_name: search-ui
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    command: sh -c "npm install && npm start"

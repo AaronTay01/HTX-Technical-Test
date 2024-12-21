@@ -1,0 +1,29 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      #- ELASTIC_PASSWORD=admin  # Set password for the 'elastic' superuser
+      - xpack.security.enabled=false  # Disable security in Elasticsearch
+      - xpack.security.authc.apiKey.enabled=false  # Disable API key authentication (optional)
+      - xpack.security.transport.ssl.enabled=false  # Disable SSL if used
+      - http.cors.enabled=true
+      - http.cors.allow-origin=http://localhost:3000
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT
+      - http.cors.allow-headers=X-Requested-With,Content-Type,Authorization
+    ports:
+      - "9200:9200"
+    volumes:
+      # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - es_data:/usr/share/elasticsearch/data
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false  # Disable security in Kibana
+volumes:
+  es_data:
