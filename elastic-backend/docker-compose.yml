@@ -1,29 +1,75 @@
 services:
-  elasticsearch:
+  elasticsearch-node1:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
-    container_name: elasticsearch
+    container_name: elasticsearch-node1
     environment:
-      - discovery.type=single-node
-      #- ELASTIC_PASSWORD=admin  # Set password for the 'elastic' superuser
+      - cluster.name=elasticsearch-cluster
+      - node.name=elasticsearch-node1
+      - network.host=0.0.0.0
+      - bootstrap.memory_lock=true
       - xpack.security.enabled=false  # Disable security in Elasticsearch
       - xpack.security.authc.apiKey.enabled=false  # Disable API key authentication (optional)
       - xpack.security.transport.ssl.enabled=false  # Disable SSL if used
+      - discovery.seed_hosts=elasticsearch-node2  # Point to the other node
+      - cluster.initial_master_nodes=elasticsearch-node1,elasticsearch-node2  # Define master nodes
       - http.cors.enabled=true
-      - http.cors.allow-origin=http://localhost:3000
-      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT
-      - http.cors.allow-headers=X-Requested-With,Content-Type,Authorization
+      - http.cors.allow-origin=http://localhost:3000  # Allow CORS requests from frontend app
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT  # Allowed HTTP methods
+      - http.cors.allow-headers=X-Requested-With,Content-Type,Authorization,x-elastic-client-meta  # Allowed headers
+      - http.cors.max-age=86400  # Cache CORS response for 1 day
     ports:
       - "9200:9200"
     volumes:
-      # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      - es_data:/usr/share/elasticsearch/data
+      - es1-data:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+    mem_limit: 2g  # Set a memory limit (adjust as needed)
+
+  elasticsearch-node2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: elasticsearch-node2
+    environment:
+      - cluster.name=elasticsearch-cluster
+      - node.name=elasticsearch-node2
+      - network.host=0.0.0.0
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false  # Disable security in Elasticsearch
+      - xpack.security.authc.apiKey.enabled=false  # Disable API key authentication (optional)
+      - xpack.security.transport.ssl.enabled=false  # Disable SSL if used
+      - discovery.seed_hosts=elasticsearch-node1  # Point to the other node
+      - cluster.initial_master_nodes=elasticsearch-node1,elasticsearch-node2  # Define master nodes
+      - http.cors.enabled=true
+      - http.cors.allow-origin=http://localhost:3000  # Allow CORS requests from frontend app
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT  # Allowed HTTP methods
+      - http.cors.allow-headers=X-Requested-With,Content-Type,Authorization,x-elastic-client-meta  # Allowed headers
+      - http.cors.max-age=86400  # Cache CORS response for 1 day
+    ports:
+      - "9201:9200"
+    volumes:
+      - es2-data:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+    mem_limit: 2g  # Set a memory limit (adjust as needed)
+
   kibana:
     image: docker.elastic.co/kibana/kibana:8.17.0
     container_name: kibana
     ports:
       - "5601:5601"
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch-node1:9200  # Point to the primary Elasticsearch node
       - xpack.security.enabled=false  # Disable security in Kibana
+      - server.cors.enabled=true  # Enable CORS in Kibana
+      - server.cors.origin=["http://localhost:3000"]  # Allow CORS from the frontend
+    networks:
+      - elastic
+
 volumes:
-  es_data:
+  es1-data:
+    driver: local
+  es2-data:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
