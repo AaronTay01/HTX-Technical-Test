@@ -1,21 +1,27 @@
-# Use Node.js base image
-FROM node:18 as build
+# Use Node.js base image for build stage
+FROM node:18-buster AS build
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy project files
+# Copy the rest of the application files
 COPY . .
 
-# Build the app
+# Build the app (e.g., React, Angular, etc.)
 RUN npm run build
 
-# Serve the app with nginx
+# Use Nginx to serve the app in the production stage
 FROM nginx:alpine
+
+# Copy built files from build stage to Nginx serving directory
 COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80
 EXPOSE 80
+
+# Run Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]

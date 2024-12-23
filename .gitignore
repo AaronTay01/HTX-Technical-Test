@@ -2,7 +2,6 @@
 .venv/
 venv/
 *.bin
-*.pdf
 *.mp3
 *.csv
 *.drawio

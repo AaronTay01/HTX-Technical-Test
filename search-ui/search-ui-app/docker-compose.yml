@@ -1,6 +1,6 @@
 services:
   react-search-ui:
-    image: node:18
+    image: node:frontend
     container_name: react-search-ui
     working_dir: /app
     ports:

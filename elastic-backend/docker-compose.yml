@@ -1,5 +1,7 @@
 services:
   elasticsearch-node1:
+    build:
+      context: ./elasticsearch-node1  # Path to the Dockerfile for elasticsearch-node1 (optional)
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     container_name: elasticsearch-node1
     environment:
@@ -26,6 +28,8 @@ services:
     mem_limit: 2g  # Set a memory limit (adjust as needed)
 
   elasticsearch-node2:
+    build:
+      context: ./elasticsearch-node2  # Path to the Dockerfile for elasticsearch-node2 (optional)
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     container_name: elasticsearch-node2
     environment:
@@ -52,6 +56,8 @@ services:
     mem_limit: 2g  # Set a memory limit (adjust as needed)
 
   kibana:
+    build:
+      context: ./kibana  # Path to the Dockerfile for Kibana (optional)
     image: docker.elastic.co/kibana/kibana:8.17.0
     container_name: kibana
     ports:

@@ -8,6 +8,11 @@ ELASTICSEARCH_NODES = [
     "http://localhost:9201",  # Second node (replace with actual second node address)
 ]
 
+AWS_ELASTICSEARCH_NODES = [
+    "http://13.215.179.156 :9200",  # First node
+    "http://13.215.179.156 :9201",  # Second node (replace with actual second node address)
+]
+
 INDEX_NAME = "cv-transcriptions"
 
 def create_index():
@@ -25,7 +30,7 @@ def create_index():
     }
 
     # Send the index creation request to all nodes
-    for node in ELASTICSEARCH_NODES:
+    for node in AWS_ELASTICSEARCH_NODES:
         response = requests.put(f"{node}/{INDEX_NAME}", json=settings)
         print(f"Index creation response from {node}: {response.json()}")
 
@@ -67,7 +72,7 @@ def index_csv_data():
             #     row['age'] = -1  # Or use `None` if you prefer
             
             # Send the data to all nodes
-            for node in ELASTICSEARCH_NODES:
+            for node in AWS_ELASTICSEARCH_NODES:
                 response = requests.post(f"{node}/{INDEX_NAME}/_doc/{i}", json=row)
                 if response.status_code == 200 or response.status_code == 201:
                     print(f"Document {i} indexed to {node}: {response.status_code}")

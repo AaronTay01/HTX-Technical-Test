@@ -4,8 +4,9 @@ import pandas as pd
 from tqdm import tqdm
 
 # Define constants
+AWS_API_URL = "http://13.213.61.168:8001/asr"
 API_URL = "http://localhost:8001/asr"  # Replace with the actual API endpoint
-AUDIO_FOLDER = "cv-valid-dev"          # Folder containing audio files
+AUDIO_FOLDER = r"cv-valid-dev"          # Folder containing audio files
 CSV_FILE = "cv-valid-dev\cv-valid-dev.csv"          # CSV file with metadata
 BATCH_SIZE = 50  # Number of files per batch
 
@@ -28,10 +29,12 @@ def transcribe_audio_files_batch(audio_files):
 
 def main():
     # Read the CSV file
-    df = pd.read_csv(CSV_FILE)
+    project_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    file_path = os.path.join(project_path, CSV_FILE)  # Combine project path with the file name
+    df = pd.read_csv(file_path)
     
     # Prepare the full paths of audio files
-    audio_files = [os.path.join(AUDIO_FOLDER, file) for file in df["filename"]]
+    audio_files = [os.path.join(project_path, AUDIO_FOLDER, file) for file in df["filename"]]
 
     # Process files in batches
     transcriptions = []
@@ -51,8 +54,8 @@ def main():
     df["generated_text"] = transcriptions
 
     # Save the updated DataFrame
-    df.to_csv(CSV_FILE, index=False)
-    print(f"Transcriptions saved to {CSV_FILE}")
+    df.to_csv(file_path, index=False)
+    print(f"Transcriptions saved to {file_path}")
 
 if __name__ == "__main__":
     main()
